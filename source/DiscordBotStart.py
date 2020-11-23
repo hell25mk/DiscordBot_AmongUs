@@ -8,7 +8,7 @@ from discord.ext import commands
 import Cogs.AmongUsCommands as game
 
 bot = commands.Bot(command_prefix = "/")
-botMessageChannelID = 780022724063526934
+botMessageChannelID = 780404995991535626
 
 @bot.event
 async def on_ready():

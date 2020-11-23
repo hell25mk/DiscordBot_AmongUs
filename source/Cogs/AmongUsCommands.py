@@ -8,12 +8,12 @@ from discord.ext import commands
 
 class AmongUs(commands.Cog):
     
-    #一般ID : 779775394521415703
-    #botのお部屋ID : 779990499112517632
-    #bot通知 : 780022724063526934
+    #一般ID : 780404995991535626
+    #botのお部屋ID : 780404995991535626
+    #bot通知 : 780404995991535626
 
-    botRoomChannelID = 779990499112517632
-    botMessageChannelID = 780022724063526934
+    botRoomChannelID = 780404995991535626
+    botMessageChannelID = 780404995991535626
     botMessage = ""
     survivor = []   # 生存者のIDリスト
     deceased = []   # 死亡者のIDリスト
@@ -21,24 +21,24 @@ class AmongUs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # ミュートとかの変更関数
-    # list ... VC設定をするUserIDリスト
-    # f_mute ... サウンドミュートフラグ：True or False
-    # f_deafen ... ミュートフラグ：True or False
-    def voice_settings(self, *list, f_mute, f_deafen):
-        for member in list:
-            await member.edit(mute=f_mute)
-            await member.edit(deafen=f_deafen)
-
     #メッセージにリアクションされたとき
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         #送信者がbotなら無視する
-        #if reaction.message.author.bot:
-        #    return
+        if reaction.count <= 1:
+            return
 
-        self.botMessage = f"【{user.name} ({user.id})】が{reaction.emoji}を押しました"
-        await reaction.message.channel.send(self.botMessage)
+        # self.botMessage = f"【{user.name} ({user.id})】が{reaction.emoji}を押しました"
+        # await reaction.message.channel.send(self.botMessage)
+        if reaction.emoji == "\N{RAISED HAND}":
+            self.survivor.append(user)
+            print(self.survivor)
+
+        if reaction.emoji == "\N{SKULL AND CROSSBONES}":
+            self.survivor.remove(user)
+            self.deceased.append(user)
+            print(self.survivor)
+            print(self.deceased)
 
     #ボイスチャンネルに誰かが入退室したとき
     @commands.Cog.listener()
@@ -68,8 +68,14 @@ class AmongUs(commands.Cog):
 
         # 生存者は話せないし聞こえない
         # 死んだ人は話せる
-        self.voice_settings(self, self.survivor, True, True)
-        self.voice_settings(self, self.deceased, False, False)
+        
+        for member in self.survivor:
+            await member.edit(mute=True)
+            await member.edit(deafen=True)
+
+        for member in self.deceased:
+            await member.edit(mute=False)
+            await member.edit(deafen=False)
 
     #会議モード
     @commands.command()
@@ -79,8 +85,13 @@ class AmongUs(commands.Cog):
 
         # 生存者は話せる
         # 死んだ人は話せない
-        self.voice_settings(self, self.survivor, False, False)
-        self.voice_settings(self, self.deceased, True, False)
+        for member in self.survivor:
+            await member.edit(mute=False)
+            await member.edit(deafen=False)
+
+        for member in self.deceased:
+            await member.edit(mute=True)
+            await member.edit(deafen=False)
 
     #bot終了
     @commands.command()
