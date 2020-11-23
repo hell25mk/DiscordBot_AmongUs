@@ -15,9 +15,20 @@ class AmongUs(commands.Cog):
     botRoomChannelID = 779990499112517632
     botMessageChannelID = 780022724063526934
     botMessage = ""
+    survivor = []   # 生存者のIDリスト
+    deceased = []   # 死亡者のIDリスト
 
     def __init__(self, bot):
         self.bot = bot
+
+    # ミュートとかの変更関数
+    # list ... VC設定をするUserIDリスト
+    # f_mute ... サウンドミュートフラグ：True or False
+    # f_deafen ... ミュートフラグ：True or False
+    def voice_settings(self, *list, f_mute, f_deafen):
+        for member in list:
+            await member.edit(mute=f_mute)
+            await member.edit(deafen=f_deafen)
 
     #メッセージにリアクションされたとき
     @commands.Cog.listener()
@@ -55,11 +66,21 @@ class AmongUs(commands.Cog):
         self.botMessage = "このコマンドで全員ミュートになる予定です"
         await ctx.send(self.botMessage)
 
+        # 生存者は話せないし聞こえない
+        # 死んだ人は話せる
+        self.voice_settings(self, self.survivor, True, True)
+        self.voice_settings(self, self.deceased, False, False)
+
     #会議モード
     @commands.command()
     async def talk(self, ctx):
         self.botMessage = "このコマンドで死んでる人以外のミュートを解除する予定です"
         await ctx.send(self.botMessage)
+
+        # 生存者は話せる
+        # 死んだ人は話せない
+        self.voice_settings(self, self.survivor, False, False)
+        self.voice_settings(self, self.deceased, True, False)
 
     #bot終了
     @commands.command()
